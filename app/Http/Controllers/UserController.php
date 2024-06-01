@@ -35,6 +35,7 @@ class UserController extends Controller
         $rules = [
             'email' => 'required|email|unique:users,email',
             'name' => 'required|string|max:255',
+            'password'=>'required|min:6',
             'phone' => ['required', 'string', 'max:15', 'regex:/^[0-9]+$/','unique:users,phone'],
         ];
     
@@ -51,6 +52,8 @@ class UserController extends Controller
             'phone.string' => 'Phone number must be a string',
             'phone.max' => 'Phone number cannot exceed 11 characters',
             'phone.regex' => 'Phone number must contain only digits',
+            'password.required'=>'Password is required',
+            'password.min'=>'Password must be at least 6 characters',
         ];
         try {
             $validatedData = $request->validate($rules, $messages);
