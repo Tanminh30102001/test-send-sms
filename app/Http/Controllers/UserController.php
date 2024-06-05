@@ -153,6 +153,6 @@ class UserController extends Controller
                 'message' => 'Required message or phone number',
             ], 200);
         }
-        return ClientIdHelper::generateClientId( $merchant_no, $email);
+        return ClientIdHelper::generateClientId( $merchant_no, $phone);
     }
 }
