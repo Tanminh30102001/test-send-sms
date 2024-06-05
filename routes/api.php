@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
     Route::post('register', [UserController::class, 'store']);
     Route::post('login', [UserController::class, 'login']);
-    Route::post('sendMessage', [MerchantController::class, 'sendSMS'])->middleware('auth:sanctum');
+    Route::post('sendMessage/{mode}', [MerchantController::class, 'sendSMS'])->middleware('auth:sanctum');
+    Route::get('generateClient',[UserController::class, 'generateClient']);
+    Route::get('generateSecret',[UserController::class, 'generateSecret']);
 });
 

@@ -65,43 +65,57 @@ class MerchantController extends Controller
     {
         //
     }
-    public function sendSMS(Request $request)
+    public function sendSMS(Request $request, $mode)
     {
         $message = $request->message ?? '';
         $phoneTo = $request->phone_number ?? '';
+        $clientID=$request->cliend_id??'';
+        $secret=$request->secret??'';
         $userId = auth()->user()->id;
         $merchant = Merchant::where('user_id', $userId)->first();
-        $checkClient = ClientIdHelper::generateClientId($merchant->merchant_no, auth()->user()->email);
-        $checkSecret = ClientIdHelper::generateClientId($merchant->merchant_no, auth()->user()->phone);
         if (!$message || !$phoneTo) {
             return response()->json([
                 'status' => '400',
                 'message' => 'Required message or phone number',
             ], 200);
         }
-        if ($checkClient != $merchant->clientID) {
+      
+        if (strlen($phoneTo) > 10 || !preg_match('/^\d+$/', $phoneTo)) {
+            return response()->json([
+                'status' => '400',
+                'message' => 'Invalid phone number. Must be at least 10 digits and contain only numbers.',
+            ], 200);
+        }
+        if ($clientID != $merchant->clientID) {
             return response()->json([
                 'status' => '400',
                 'message' => 'wrong cliendID',
             ], 200);
         }
-        if ($checkSecret != $merchant->secretID) {
+        if ($secret != $merchant->secretID) {
             return response()->json([
                 'status' => '400',
                 'message' => 'wrong cliendID',
             ], 200);
         }
-        $sendMess = SendSMSHelper::send($phoneTo,$message);
-        $logSendSMS= new Logsend();
-        $logSendSMS->phone_from=auth()->user()->phone;
-        $logSendSMS->phone_to=$phoneTo;
-        $logSendSMS->message= $message;
-        $logSendSMS->status=$sendMess['IsSent'];
-        $logSendSMS->clientID=$checkClient;
-        $logSendSMS->secretID=$checkSecret;
-        $logSendSMS->message_id=$sendMess['MessageId'];
-        
+        if (!in_array($mode, ['sandbox', 'production'])) {
+            return response()->json([
+                'status' => '400',
+                'message' => 'Invalid mode specified',
+            ], 200);
+        }
+        $sendMess = SendSMSHelper::send($phoneTo, $message, $mode);
+        $logSendSMS = new Logsend();
+        $logSendSMS->phone_from = auth()->user()->phone;
+        $logSendSMS->phone_to = $phoneTo;
+        $logSendSMS->message = $message;
+        $logSendSMS->status = $sendMess['IsSent'];
+        $logSendSMS->clientID = $clientID;
+        $logSendSMS->secretID = $secret;
+        $logSendSMS->message_id = $sendMess['MessageId'];
+        $logSendSMS->merchant_no = $merchant->merchant_no;
         $logSendSMS->save();
+
         return $sendMess;
     }
 }

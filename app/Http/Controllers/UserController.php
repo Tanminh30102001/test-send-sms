@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Helpers\ClientIdHelper;
 use App\Events\UserRegistered;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -24,7 +24,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        
+
     }
 
     /**
@@ -35,10 +35,10 @@ class UserController extends Controller
         $rules = [
             'email' => 'required|email|unique:users,email',
             'name' => 'required|string|max:255',
-            'password'=>'required|min:6',
-            'phone' => ['required', 'string', 'max:15', 'regex:/^[0-9]+$/','unique:users,phone'],
+            'password' => 'required|min:6',
+            'phone' => ['required', 'string', 'max:15', 'regex:/^[0-9]+$/', 'unique:users,phone'],
         ];
-    
+
         // Thông báo lỗi tùy chỉnh
         $messages = [
             'email.required' => 'Email is required',
@@ -52,12 +52,12 @@ class UserController extends Controller
             'phone.string' => 'Phone number must be a string',
             'phone.max' => 'Phone number cannot exceed 11 characters',
             'phone.regex' => 'Phone number must contain only digits',
-            'password.required'=>'Password is required',
-            'password.min'=>'Password must be at least 6 characters',
+            'password.required' => 'Password is required',
+            'password.min' => 'Password must be at least 6 characters',
         ];
         try {
             $validatedData = $request->validate($rules, $messages);
-    
+
             // Nếu xác thực thành công, tiếp tục xử lý dữ liệu
             $user = new User();
             $user->name = $request->name;
@@ -83,7 +83,13 @@ class UserController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
-        
+        if ($request->email === "" || $request->pasword === "") {
+            return response()->json([
+                'status' => '400',
+                'message' => 'Login failed',
+                'errors' => 'Required email or password',
+            ], 200);
+        }
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
             $token = $user->createToken('authToken')->plainTextToken;
@@ -97,7 +103,7 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        
+
     }
 
     /**
@@ -105,7 +111,7 @@ class UserController extends Controller
      */
     public function edit(string $id)
     {
-        
+
     }
 
     /**
@@ -122,5 +128,31 @@ class UserController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+    public function generateClient(Request $request){
+        $params=$request->all();
+        $merchant_no=$params['merchant_no']??'';
+        $email=$params['email']??"";
+        
+        if(!$merchant_no||!$email){
+            return response()->json([
+                'status' => '400',
+                'message' => 'Required merchantID or email',
+            ], 200);
+        }
+        return ClientIdHelper::generateClientId( $merchant_no, $email);
+    }
+    public function generateSecret(Request $request){
+        $params=$request->all();
+        $merchant_no=$params['merchant_no']??'';
+        $phone=$params['phone']??"";
+        
+        if(!$merchant_no||!$phone){
+            return response()->json([
+                'status' => '400',
+                'message' => 'Required message or phone number',
+            ], 200);
+        }
+        return ClientIdHelper::generateClientId( $merchant_no, $email);
     }
 }
