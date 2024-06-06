@@ -67,11 +67,13 @@ class MerchantController extends Controller
     }
     public function sendSMS(Request $request, $mode)
     {
+       
         $message = $request->message ?? '';
         $phoneTo = $request->phone_number ?? '';
         $clientID=$request->cliend_id??'';
         $secret=$request->secret??'';
         $userId = auth()->user()->id;
+        $projectId = $request->project_id ?? '';
         $merchant = Merchant::where('user_id', $userId)->first();
         if (!$message || !$phoneTo) {
             return response()->json([
@@ -79,7 +81,12 @@ class MerchantController extends Controller
                 'message' => 'Required message or phone number',
             ], 200);
         }
-      
+        if (! $projectId) {
+            return response()->json([
+                'status' => '400',
+                'message' => 'Required project',
+            ], 200);
+        }
         if (strlen($phoneTo) > 10 || !preg_match('/^\d+$/', $phoneTo)) {
             return response()->json([
                 'status' => '400',
@@ -114,6 +121,7 @@ class MerchantController extends Controller
         $logSendSMS->secretID = $secret;
         $logSendSMS->message_id = $sendMess['MessageId'];
         $logSendSMS->merchant_no = $merchant->merchant_no;
+        $logSendSMS->project_id = $projectId;
         $logSendSMS->save();
 
         return $sendMess;
