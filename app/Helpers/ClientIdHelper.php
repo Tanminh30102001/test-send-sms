@@ -1,13 +1,15 @@
 <?php
 
 namespace App\Helpers;
-
+use Illuminate\Support\Str;
 class ClientIdHelper
 {
-    public static function generateClientId($merchantNo,$emailOrphone)
+    public static function generateClientId()
     {
-        $clientId = md5($merchantNo . $emailOrphone);
-        return $clientId;
-    }
 
+        return strtolower(Str::random(40));
+    }
+    public static function generateSecretAuto(){
+        return strtolower(Str::random(72));
+    }
 }

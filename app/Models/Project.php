@@ -11,7 +11,8 @@ class Project extends Model
     protected $fillable = [
         'merchant_id',
         'name',
-        'merchant_no'
+        'merchant_no',
+        'project_secret'
     ];
     public function merchant()
     {

@@ -7,6 +7,7 @@ use App\Models\Merchant;
 use Illuminate\Http\Request;
 use App\Helpers\SendSMSHelper;
 use App\Models\Logsend;
+use App\Models\Project;
 
 class MerchantController extends Controller
 {
@@ -73,7 +74,8 @@ class MerchantController extends Controller
         $clientID=$request->cliend_id??'';
         $secret=$request->secret??'';
         $userId = auth()->user()->id;
-        $projectId = $request->project_id ?? '';
+        $project_secret = $request->project_secret ?? '';
+        $projectExits= Project::where('project_secret',$project_secret)->first();
         $merchant = Merchant::where('user_id', $userId)->first();
         if (!$message || !$phoneTo) {
             return response()->json([
@@ -81,10 +83,16 @@ class MerchantController extends Controller
                 'message' => 'Required message or phone number',
             ], 200);
         }
-        if (! $projectId) {
+        if (! $projectExits) {
             return response()->json([
                 'status' => '400',
                 'message' => 'Required project',
+            ], 200);
+        }
+        if ($projectExits->is_ban) {
+            return response()->json([
+                'status' => '400',
+                'message' => 'This project is banned',
             ], 200);
         }
         if (strlen($phoneTo) > 10 || !preg_match('/^\d+$/', $phoneTo)) {
@@ -118,10 +126,10 @@ class MerchantController extends Controller
         $logSendSMS->message = $message;
         $logSendSMS->status = $sendMess['IsSent'];
         $logSendSMS->clientID = $clientID;
-        $logSendSMS->secretID = $secret;
         $logSendSMS->message_id = $sendMess['MessageId'];
         $logSendSMS->merchant_no = $merchant->merchant_no;
-        $logSendSMS->project_id = $projectId;
+        $logSendSMS->project_id = $projectExits->id;
+        $logSendSMS->enviroment=$mode;
         $logSendSMS->save();
 
         return $sendMess;

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Helpers\ClientIdHelper;
 use App\Events\UserRegistered;
+use App\Models\Merchant;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -57,8 +58,6 @@ class UserController extends Controller
         ];
         try {
             $validatedData = $request->validate($rules, $messages);
-
-            // Nếu xác thực thành công, tiếp tục xử lý dữ liệu
             $user = new User();
             $user->name = $request->name;
             $user->email = $request->email;
@@ -66,13 +65,14 @@ class UserController extends Controller
             $user->password = Hash::make($request->password);
             $user->save();
             event(new UserRegistered($user));
+            $merchant=Merchant::where('user_id',$user->id)->first();
             return response()->json([
                 'status' => '200',
                 'message' => 'User created successfully',
                 'data' => $user,
+                'merchant'=>$merchant
             ], 200);
         } catch (ValidationException $e) {
-            // Nếu xác thực không thành công, trả về các lỗi dưới dạng JSON
             return response()->json([
                 'status' => '400',
                 'message' => 'User created failed',

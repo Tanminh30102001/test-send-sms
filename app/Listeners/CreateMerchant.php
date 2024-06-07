@@ -26,8 +26,8 @@ class CreateMerchant
         $merchant = new Merchant();
         $merchant->user_id = $event->user->id;
         $merchant->merchant_no=$merchant_no;
-        $client_id= ClientIdHelper::generateClientId($merchant_no,$event->user->email);
-        $secretID=ClientIdHelper::generateClientId($merchant_no,$event->user->phone);
+        $client_id= ClientIdHelper::generateClientId();
+        $secretID=ClientIdHelper::generateSecretAuto();
         $merchant->clientID=$client_id;
         $merchant->secretID=$secretID;
         $merchant->save();
