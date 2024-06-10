@@ -64,13 +64,11 @@ class UserController extends Controller
             $user->phone = $request->phone;
             $user->password = Hash::make($request->password);
             $user->save();
-            event(new UserRegistered($user));
-            $merchant=Merchant::where('user_id',$user->id)->first();
+            // event(new UserRegistered($user));
             return response()->json([
                 'status' => '200',
                 'message' => 'User created successfully',
                 'data' => $user,
-                'merchant'=>$merchant
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([
@@ -80,20 +78,44 @@ class UserController extends Controller
             ], 200);
         }
     }
+    // public function login(Request $request)
+    // {
+    //     $credentials = $request->only('email', 'password');
+    //     if ($request->email === "" || $request->pasword === "") {
+    //         return response()->json([
+    //             'status' => '400',
+    //             'message' => 'Login failed',
+    //             'errors' => 'Required email or password',
+    //         ], 200);
+    //     }
+    //     if (Auth::attempt($credentials)) {
+    //         $user = Auth::user();
+    //         $token = $user->createToken('authToken')->plainTextToken;
+    //         return response()->json(['token' => $token], 200);
+    //     } else {
+    //         return response()->json(['error' => 'Unauthorized'], 401);
+    //     }
+    // }
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
-        if ($request->email === "" || $request->pasword === "") {
+
+        if (empty($credentials['email']) || empty($credentials['password'])) {
             return response()->json([
                 'status' => '400',
                 'message' => 'Login failed',
                 'errors' => 'Required email or password',
             ], 200);
         }
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
+
+        if (Auth::guard('web')->attempt($credentials)) {
+            $user = Auth::guard('web')->user();
             $token = $user->createToken('authToken')->plainTextToken;
-            return response()->json(['token' => $token], 200);
+            return response()->json([
+                'status' => '200',
+                'token' => $token,
+                'user' => $user
+            ], 200);
         } else {
             return response()->json(['error' => 'Unauthorized'], 401);
         }

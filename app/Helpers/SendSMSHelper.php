@@ -40,11 +40,8 @@ class SendSMSHelper
     }
     public static function sendSMS($mode)
     {
-        // $url = 'https://sandbox.sms.fpt.net/oauth2/token';
         $url = self::getTokenUrl($mode);
         $scope = "send_brandname_otp send_brandname";
-        // $client_id = "888a1ad38442ea0d8dcc6B75f843b32FD5d10c88";
-        // $client_secret = "f13F32a055082062d9c508ce81292880EF4987e4763e2D55509073872e8423dC4a6ca42d";
         $client_id = self::getClientId($mode);
         $client_secret = self::getClientSecret($mode);
         $sessionId = Str::random(31);
@@ -78,7 +75,8 @@ class SendSMSHelper
             'access_token' => $otp['access_token'],
             'session_id' => $otp['session_id'],
             'Phone' => $phone,
-            'Message' => base64_encode($message),
+            // 'Message' => base64_encode($message),
+            'Message' =>$message,
             'BrandName' => 'XINTEL.VN',
             "RequestId" => $requestID
         ];

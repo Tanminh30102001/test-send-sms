@@ -31,5 +31,22 @@ Route::prefix('v1')->group(function () {
         Route::put('projects/{id}', [ProjectController::class, 'update']);
         Route::delete('projects/{id}', [ProjectController::class, 'destroy']);
     });
+    Route::post('login/user', [UserController::class, 'login']);
+    Route::post('login/merchant', [MerchantController::class, 'merchantLogin']);
+//Route for admin
+    Route::group(['middleware' => ['auth:sanctum']], function () {
+        Route::get('/user', [MerchantController::class, 'index']);
+        Route::post('/user/add-merchant', [MerchantController::class, 'store']);
+        Route::get('/user/{merchant_no}', [MerchantController::class, 'show']);
+        Route::put('/user/edit-merchant/{merchant_no}', [MerchantController::class, 'edit']);
+        Route::delete('/user/delete-merchant/{merchant_no}', [MerchantController::class, 'destroy']);
+    });
+    // End route for admin
+
+
+    Route::group(['middleware' => ['auth:merchant-api']], function () {
+        Route::put('/merchant/update', [MerchantController::class, 'updateByMerchant']);
+        Route::middleware(['throttle:sendSMS'])->post('sendMessage/{mode}', [MerchantController::class, 'sendSMS']);
+    });
 });
 

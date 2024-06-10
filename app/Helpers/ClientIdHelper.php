@@ -12,4 +12,7 @@ class ClientIdHelper
     public static function generateSecretAuto(){
         return strtolower(Str::random(72));
     }
+    public static function generateKey(){
+        return strtolower(Str::random(16));
+    }
 }
